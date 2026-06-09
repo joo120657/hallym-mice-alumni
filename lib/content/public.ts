@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicUrl } from "@/lib/storage";
+import type { AuthContext } from "@/lib/guards/withAuth";
 import type { ArticleRow, ProfileRow } from "@/types/database";
 import type { ArticleDetail, ArticleListItem } from "@/lib/content/types";
 
@@ -47,8 +48,12 @@ export type ArticleDetailResult =
   | { kind: "ok"; article: ArticleDetail }
   | { kind: "not_found" };
 
-/** 공개 콘텐츠 단건 + (있으면) 관련 동문(공개·활성일 때만 안전 노출). */
+/**
+ * 공개 콘텐츠 단건 + (있으면) 관련 동문(공개·활성일 때만 안전 노출).
+ * 타인에게는 published 만, 관리자는 draft/hidden 도 인라인 검수용으로 열람 가능.
+ */
 export async function getPublishedArticle(
+  me: AuthContext,
   id: string,
 ): Promise<ArticleDetailResult> {
   const admin = createAdminClient();
@@ -59,7 +64,9 @@ export async function getPublishedArticle(
     .maybeSingle<ArticleRow>();
 
   if (error) throw new Error(`[content] 상세 조회 실패: ${error.message}`);
-  if (!data || data.status !== "published") return { kind: "not_found" };
+  if (!data) return { kind: "not_found" };
+  const visibleToOthers = data.status === "published";
+  if (!visibleToOthers && !me.isAdmin) return { kind: "not_found" };
 
   let related = null as ArticleDetail["related_profile"];
   if (data.related_profile_id) {

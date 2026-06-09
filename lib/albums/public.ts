@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { AuthContext } from "@/lib/guards/withAuth";
 import type { AlbumImageRow, AlbumRow } from "@/types/database";
 
 /**
@@ -24,8 +25,12 @@ export async function listPublicAlbums(limit = 200): Promise<AlbumRow[]> {
   return (data ?? []) as AlbumRow[];
 }
 
-/** 공개 앨범 단건 + 이미지. 비공개/없음 → null. */
+/**
+ * 공개 앨범 단건 + 이미지. 비공개/없음 → null.
+ * 비관리자는 공개(is_public) 앨범만, 관리자는 비공개 앨범도 인라인 검수용으로 열람 가능.
+ */
 export async function getPublicAlbum(
+  me: AuthContext,
   id: string,
 ): Promise<{ album: AlbumRow; images: AlbumImageRow[] } | null> {
   const admin = createAdminClient();
@@ -33,10 +38,10 @@ export async function getPublicAlbum(
     .from("albums")
     .select("*")
     .eq("id", id)
-    .eq("is_public", true)
     .maybeSingle<AlbumRow>();
 
   if (!album) return null;
+  if (!album.is_public && !me.isAdmin) return null;
 
   const { data: images } = await admin
     .from("album_images")

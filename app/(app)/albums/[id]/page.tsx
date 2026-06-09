@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { requireMember } from "@/lib/guards/requireMember";
-import { AuthError } from "@/lib/guards/withAuth";
+import { requireMemberPage } from "@/lib/guards/page";
 import { getPublicAlbum } from "@/lib/albums/public";
 import { AlbumViewer } from "@/components/albums/AlbumViewer";
+import { AdminInlineBar } from "@/components/admin/AdminInlineBar";
+import { AlbumPublishToggle } from "@/components/albums/AlbumPublishToggle";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Badge } from "@/components/ui/badge";
 import { ERROR } from "@/lib/messages";
 
 /**
@@ -21,16 +22,9 @@ export default async function MemberAlbumDetailPage({
 }) {
   const { id } = await params;
 
-  try {
-    await requireMember();
-  } catch (err) {
-    if (err instanceof AuthError && err.status === 401) {
-      redirect(`/login?next=/albums/${id}`);
-    }
-    redirect("/home");
-  }
+  const me = await requireMemberPage(`/albums/${id}`);
 
-  const result = await getPublicAlbum(id);
+  const result = await getPublicAlbum(me, id);
 
   if (!result) {
     return (
@@ -59,6 +53,21 @@ export default async function MemberAlbumDetailPage({
       >
         ← 행사 기록
       </Link>
+      {me.isAdmin ? (
+        <AdminInlineBar
+          editHref={`/admin/albums/${id}`}
+          statusBadge={
+            !result.album.is_public ? (
+              <Badge variant="secondary">비공개 (관리자만 열람 중)</Badge>
+            ) : null
+          }
+          primaryActions={<AlbumPublishToggle album={result.album} />}
+          deleteUrl={`/api/admin/albums/${id}`}
+          deleteConfirmText="정말 삭제할까요? (이미지도 함께 삭제)"
+          deleteRedirect="/albums"
+          deleteLabel="앨범 삭제"
+        />
+      ) : null}
       <AlbumViewer album={result.album} images={result.images} />
     </section>
   );

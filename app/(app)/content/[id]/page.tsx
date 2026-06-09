@@ -1,10 +1,14 @@
 import Link from "next/link";
 
 import { ArticleReader } from "@/components/content/ArticleReader";
+import { AdminInlineBar } from "@/components/admin/AdminInlineBar";
+import { ContentStatusActions } from "@/components/content/ContentStatusActions";
 import { EmptyState } from "@/components/common/EmptyState";
+import { Badge } from "@/components/ui/badge";
 import { requireMemberPage } from "@/lib/guards/page";
 import { getPublishedArticle } from "@/lib/content/public";
 import { makeCohortHash, recordEvent } from "@/lib/analytics/events";
+import { ARTICLE_STATUS_LABEL, ARTICLE_STATUS_TONE } from "@/lib/labels";
 import { ERROR } from "@/lib/messages";
 
 /**
@@ -18,7 +22,7 @@ export default async function ContentDetailPage({
   const { id } = await params;
   const me = await requireMemberPage(`/content/${id}`);
 
-  const result = await getPublishedArticle(id);
+  const result = await getPublishedArticle(me, id);
   if (result.kind === "not_found") {
     return (
       <section className="px-5 py-6">
@@ -38,15 +42,18 @@ export default async function ContentDetailPage({
     );
   }
 
-  try {
-    await recordEvent({
-      eventType: "article_view",
-      cohortHash: makeCohortHash(me.userId),
-      profileId: me.profile.id,
-      targetId: id,
-    });
-  } catch {
-    // 무시.
+  // 일반 회원의 게시글 열람만 집계한다(관리자 검수 열람·draft/hidden 은 조회수 오염 방지).
+  if (result.article.status === "published" && !me.isAdmin) {
+    try {
+      await recordEvent({
+        eventType: "article_view",
+        cohortHash: makeCohortHash(me.userId),
+        profileId: me.profile.id,
+        targetId: id,
+      });
+    } catch {
+      // 무시.
+    }
   }
 
   return (
@@ -57,6 +64,28 @@ export default async function ContentDetailPage({
       >
         ← 콘텐츠
       </Link>
+      {me.isAdmin ? (
+        <AdminInlineBar
+          editHref={`/admin/content/${id}`}
+          statusBadge={
+            result.article.status !== "published" ? (
+              <Badge variant={ARTICLE_STATUS_TONE[result.article.status]}>
+                {ARTICLE_STATUS_LABEL[result.article.status]}
+              </Badge>
+            ) : null
+          }
+          primaryActions={
+            <ContentStatusActions
+              articleId={result.article.id}
+              status={result.article.status}
+            />
+          }
+          deleteUrl={`/api/admin/content/${id}`}
+          deleteConfirmText="정말 삭제할까요?"
+          deleteRedirect="/content"
+          deleteLabel="콘텐츠 삭제"
+        />
+      ) : null}
       <ArticleReader article={result.article} />
     </section>
   );
