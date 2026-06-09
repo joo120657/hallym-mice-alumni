@@ -9,6 +9,28 @@ import { blockSchema } from "@/lib/validators";
  * 차단하면 내 프로필이 상대에게 숨겨지고(디렉토리 queries 가 양방향 제외),
  * 상대→나 / 나→상대 제안 중계도 차단된다(proposal route 검사).
  */
+/** GET /api/blocks — 내가 차단한 회원 목록(차단 해제 UI용). */
+export const GET = withAuth(
+  async (_req, { me }) => {
+    const admin = createAdminClient();
+    const { data: rows } = await admin
+      .from("blocks")
+      .select("blocked_profile_id")
+      .eq("blocker_profile_id", me.profile.id);
+    const ids = (rows ?? []).map((r) => r.blocked_profile_id);
+    if (ids.length === 0) return Response.json({ blocked: [] });
+
+    const { data: profiles } = await admin
+      .from("profiles")
+      .select("id,name")
+      .in("id", ids);
+    return Response.json({
+      blocked: (profiles ?? []).map((p) => ({ id: p.id, name: p.name })),
+    });
+  },
+  { role: "member" },
+);
+
 export const POST = withAuth(
   async (req, { me }) => {
     let body: unknown;

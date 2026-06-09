@@ -45,8 +45,8 @@ export default async function HomePage() {
   const [directory, jobsRes, articles, albums] = await Promise.all([
     listDirectory(me, { limit: 6 }),
     listPublishedJobs(me, { limit: 3 }),
-    listPublishedArticles(),
-    listPublicAlbums(),
+    listPublishedArticles(3),
+    listPublicAlbums(4),
   ]);
 
   const recommended = directory.items

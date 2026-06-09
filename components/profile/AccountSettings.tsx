@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LogoutButton } from "@/components/profile/LogoutButton";
+import { BlockedMembers } from "@/components/profile/BlockedMembers";
 import { createClient } from "@/lib/supabase/client";
 
 /**
@@ -64,6 +65,8 @@ export function AccountSettings({ isPublic }: { isPublic: boolean }) {
           {hidden ? "다시 공개하기" : "프로필 비공개로 전환"}
         </Button>
       </div>
+
+      <BlockedMembers />
 
       <LogoutButton variant="outline" className="w-full" />
 

@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { recordAdminLog } from "@/lib/admin/log";
+import { createInAppNotification } from "@/lib/notifications/create";
 import { withAuth } from "@/lib/guards/withAuth";
 import { jobStatusSchema } from "@/lib/validators";
 import type { JobRow, JobStatus } from "@/types/database";
@@ -83,9 +84,9 @@ export const PATCH = withAuth(
     const admin = createAdminClient();
     const { data: existing } = await admin
       .from("jobs")
-      .select("id, status")
+      .select("id, status, author_id, title")
       .eq("id", jobId)
-      .maybeSingle<Pick<JobRow, "id" | "status">>();
+      .maybeSingle<Pick<JobRow, "id" | "status" | "author_id" | "title">>();
     if (!existing) {
       return Response.json({ error: "공고를 찾을 수 없어요." }, { status: 404 });
     }
@@ -105,6 +106,21 @@ export const PATCH = withAuth(
       targetId: jobId,
       detail: { from: existing.status, to: parsed.data },
     });
+
+    // 승인(게시)되면 작성자에게 인앱 알림.
+    if (
+      parsed.data === "published" &&
+      existing.status !== "published" &&
+      existing.author_id
+    ) {
+      await createInAppNotification({
+        profileId: existing.author_id,
+        type: "job_published",
+        title: "공고가 게시됐어요",
+        message: `"${existing.title}" 공고가 승인되어 게시됐어요.`,
+        link: `/jobs/${jobId}`,
+      });
+    }
 
     return Response.json({ ok: true, status: parsed.data });
   },

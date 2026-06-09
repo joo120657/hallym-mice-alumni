@@ -38,7 +38,8 @@ export default async function JobDetailPage({
   }
 
   const j = result.job;
-  const closed = j.status === "closed";
+  const today = new Date().toISOString().slice(0, 10);
+  const closed = j.status === "closed" || (!!j.deadline && j.deadline < today);
 
   if (!j.is_author) {
     try {

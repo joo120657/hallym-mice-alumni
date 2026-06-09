@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { recordAdminLog } from "@/lib/admin/log";
 import { withAuth } from "@/lib/guards/withAuth";
+import { sanitizeSearchTerm } from "@/lib/search";
 import { profileRoleSchema, profileStatusSchema } from "@/lib/validators";
 import type { ProfileRow } from "@/types/database";
 
@@ -32,8 +33,8 @@ export const GET = withAuth(
       .limit(50);
 
     if (q) {
-      // 이름/소속/직함 부분 검색(pg_trgm 인덱스 활용).
-      const pattern = `%${q}%`;
+      // 이름/소속/직함 부분 검색(pg_trgm 인덱스 활용). .or() 필터 인젝션 방지.
+      const pattern = `%${sanitizeSearchTerm(q)}%`;
       query = query.or(
         `name.ilike.${pattern},organization.ilike.${pattern},position.ilike.${pattern}`,
       );
@@ -114,6 +115,12 @@ export const PATCH = withAuth(
     if (me.profile.id === profileId && update.status && update.status !== "active") {
       return Response.json(
         { error: "본인 계정의 상태는 변경할 수 없어요." },
+        { status: 400 },
+      );
+    }
+    if (me.profile.id === profileId && update.role !== undefined) {
+      return Response.json(
+        { error: "본인 계정의 역할은 변경할 수 없어요." },
         { status: 400 },
       );
     }

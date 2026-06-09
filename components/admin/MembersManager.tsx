@@ -114,12 +114,8 @@ export function MembersManager() {
         setActionError(json.error ?? "변경에 실패했어요.");
         return;
       }
-      // 응답으로 받은 최신 값으로 로컬 갱신.
-      setMembers((prev) =>
-        prev.map((m) =>
-          m.id === profileId ? { ...m, ...json.member } : m,
-        ),
-      );
+      // 변경(특히 status)이 현재 필터와 어긋날 수 있으므로 재조회해 목록 일관성 유지.
+      await load();
     } catch {
       setActionError("네트워크 오류가 발생했어요.");
     } finally {

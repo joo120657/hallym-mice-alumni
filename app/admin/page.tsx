@@ -168,6 +168,8 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-3 gap-3">
         <QuickLink href="/admin/reports" label="신고 관리" badge={pending} />
         <QuickLink href="/admin/members" label="회원 관리" />
+        <QuickLink href="/admin/jobs" label="구인 승인" />
+        <QuickLink href="/admin/content" label="콘텐츠" />
         <QuickLink href="/admin/albums" label="갤러리" />
       </div>
     </section>

@@ -10,16 +10,17 @@ import type { AlbumImageRow, AlbumRow } from "@/types/database";
  * 공개(is_public=true) 앨범만 노출한다. service_role(admin)로 서버에서만 호출.
  */
 
-/** 공개 앨범 목록(최신 행사일 순). */
-export async function listPublicAlbums(): Promise<AlbumRow[]> {
+/** 공개 앨범 목록(최신 행사일 순). limit 으로 미리보기용 소량 조회 가능. */
+export async function listPublicAlbums(limit = 200): Promise<AlbumRow[]> {
   const admin = createAdminClient();
-  const { data } = await admin
+  const { data, error } = await admin
     .from("albums")
     .select("*")
     .eq("is_public", true)
     .order("event_date", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(200);
+    .limit(limit);
+  if (error) throw new Error(`[albums] 목록 조회 실패: ${error.message}`);
   return (data ?? []) as AlbumRow[];
 }
 

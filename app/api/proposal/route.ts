@@ -2,6 +2,7 @@ import { withAuth } from "@/lib/guards/withAuth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { makeCohortHash, recordEvent } from "@/lib/analytics/events";
 import { sendProposalEmail } from "@/lib/email/proposal";
+import { createInAppNotification } from "@/lib/notifications/create";
 import { checkDailyLimit } from "@/lib/rate-limit";
 import { proposalSchema } from "@/lib/validators";
 import type { ProfileRow } from "@/types/database";
@@ -108,6 +109,15 @@ export const POST = withAuth(
     } catch (e) {
       console.error("[proposal] event 기록 실패", e);
     }
+
+    // 수신자에게 인앱 알림(인박스/벨). 발신자 프로필로 이동 링크.
+    await createInAppNotification({
+      profileId: target.id,
+      type: "proposal",
+      title: "새 제안이 도착했어요",
+      message: `${me.profile.name} 님이 제안을 보냈어요.`,
+      link: `/alumni/${me.profile.id}`,
+    });
 
     // status==='skipped'(RESEND 미설정) 도 사용자에겐 접수 완료로 응답(개발환경).
     return Response.json({ ok: true });

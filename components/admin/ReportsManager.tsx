@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,7 +33,15 @@ type ReportWithTarget = ReportRow & {
     status: string;
     is_public: boolean;
   } | null;
+  target_title: string | null;
 };
+
+/** 신고 대상으로 이동하는 링크(관리자가 무엇을 처리하는지 직접 확인). */
+function targetHref(r: ReportWithTarget): string {
+  if (r.target_type === "job") return `/jobs/${r.target_id}`;
+  if (r.target_type === "article") return `/admin/content/${r.target_id}`;
+  return `/alumni/${r.target_id}`;
+}
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "open", label: "신규" },
@@ -156,7 +166,9 @@ export function ReportsManager({ initialStatus }: { initialStatus: string }) {
                     <Badge variant="outline" className="mr-2">
                       {TARGET_LABEL[r.target_type] ?? r.target_type}
                     </Badge>
-                    {r.target_profile?.name ?? r.target_id.slice(0, 8)}
+                    {r.target_profile?.name ??
+                      r.target_title ??
+                      r.target_id.slice(0, 8)}
                   </CardTitle>
                   <Badge variant={STATUS_META[r.status].variant}>
                     {STATUS_META[r.status].label}
@@ -175,6 +187,9 @@ export function ReportsManager({ initialStatus }: { initialStatus: string }) {
                 ) : null}
 
                 <div className="flex flex-wrap gap-2">
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href={targetHref(r)}>보기</Link>
+                  </Button>
                   {/* 상태 전이 */}
                   {r.status === "open" ? (
                     <Button

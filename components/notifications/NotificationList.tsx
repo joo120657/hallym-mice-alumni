@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { ChevronRight } from "lucide-react";
 
@@ -42,6 +43,7 @@ function linkOf(n: NotificationRow): string | null {
 }
 
 export function NotificationList() {
+  const router = useRouter();
   const [items, setItems] = useState<NotificationRow[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [busy, setBusy] = useState(false);
@@ -72,10 +74,12 @@ export function NotificationList() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ all: true }),
+        keepalive: true,
       });
       if (res.ok) {
         const now = new Date().toISOString();
         setItems((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })));
+        router.refresh(); // 헤더 벨 미읽음 배지 재검증.
       }
     } finally {
       setBusy(false);
@@ -93,7 +97,9 @@ export function NotificationList() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id: n.id }),
+        keepalive: true, // 링크 이동으로 요청이 끊겨도 서버 read_at 갱신 보장.
       });
+      router.refresh(); // 헤더 벨 미읽음 배지 재검증.
     } catch {
       // 낙관적 — 실패해도 조용히.
     }

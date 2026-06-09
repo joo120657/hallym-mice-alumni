@@ -24,23 +24,29 @@ export default async function JobsPage() {
 
   return (
     <section>
-      <header className="flex items-start justify-between gap-2 px-5 pt-5">
-        <div>
-          <h1 className="text-xl font-bold">기회</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            동문이 올린 채용·공모·프로젝트 공고
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-2">
-          <Button asChild variant="outline" size="icon" aria-label="저장한 공고">
-            <Link href="/jobs/bookmarks">
-              <Bookmark className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button asChild size="sm">
+      <header className="px-5 pt-5">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h1 className="text-xl font-bold">기회</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              동문이 올린 채용·공모·프로젝트 공고
+            </p>
+          </div>
+          <Button asChild size="sm" className="shrink-0">
             <Link href="/jobs/new">
               <Plus className="h-4 w-4" />
               올리기
+            </Link>
+          </Button>
+        </div>
+        <div className="mt-3 flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/jobs/mine">내 공고</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/jobs/bookmarks">
+              <Bookmark className="h-4 w-4" />
+              저장
             </Link>
           </Button>
         </div>

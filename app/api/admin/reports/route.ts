@@ -63,10 +63,37 @@ export const GET = withAuth(
       }
     }
 
+    // job/article 신고는 제목을 함께 첨부(관리자가 무엇을 숨기는지 확인 가능하게).
+    const titleMap = new Map<string, string>();
+    const jobIds = reports
+      .filter((r) => r.target_type === "job")
+      .map((r) => r.target_id);
+    const articleIds = reports
+      .filter((r) => r.target_type === "article")
+      .map((r) => r.target_id);
+    if (jobIds.length > 0) {
+      const { data: jobs } = await admin
+        .from("jobs")
+        .select("id, title")
+        .in("id", jobIds);
+      for (const j of (jobs ?? []) as Array<{ id: string; title: string }>)
+        titleMap.set(j.id, j.title);
+    }
+    if (articleIds.length > 0) {
+      const { data: arts } = await admin
+        .from("articles")
+        .select("id, title")
+        .in("id", articleIds);
+      for (const a of (arts ?? []) as Array<{ id: string; title: string }>)
+        titleMap.set(a.id, a.title);
+    }
+
     return Response.json({
       reports: reports.map((r) => ({
         ...r,
         target_profile: targetMap.get(r.target_id) ?? null,
+        target_title:
+          r.target_type !== "profile" ? titleMap.get(r.target_id) ?? null : null,
       })),
     });
   },

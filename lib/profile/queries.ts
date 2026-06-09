@@ -2,6 +2,7 @@ import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicUrl } from "@/lib/storage";
+import { sanitizeSearchTerm } from "@/lib/search";
 import {
   toProfileCard,
   toProfileDetail,
@@ -75,7 +76,7 @@ export async function listDirectory(
   }
 
   if (filters.q) {
-    const term = `%${filters.q}%`;
+    const term = `%${sanitizeSearchTerm(filters.q)}%`;
     query = query.or(
       `name.ilike.${term},organization.ilike.${term},position.ilike.${term}`,
     );
@@ -90,7 +91,8 @@ export async function listDirectory(
     query = query.eq("graduation_year", filters.graduationYear);
   }
   if (filters.coffeechatOpen) {
-    query = query.in("coffeechat_status", ["open", "monthly", "offer_only"]);
+    // '커피챗 가능' = open/monthly 만. offer_only(제안만)는 커피챗 거부이므로 제외.
+    query = query.in("coffeechat_status", ["open", "monthly"]);
   }
 
   query = query

@@ -8,7 +8,9 @@ import { OnboardingForm } from "./onboarding-form";
 export default function OnboardingPage() {
   return (
     <section className="px-5 py-8">
-      <p className="text-sm text-muted-foreground">1 / 2</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-primary">
+        가입
+      </p>
       <h1 className="mt-1 text-xl font-bold">가입 정보 입력</h1>
       <p className="mb-6 mt-2 text-sm text-muted-foreground">
         이름·역할·학과와 졸업연도(또는 학번), 필수 동의 3가지를 입력하면 바로

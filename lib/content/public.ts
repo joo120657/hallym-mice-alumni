@@ -11,15 +11,19 @@ import type { ArticleDetail, ArticleListItem } from "@/lib/content/types";
  * service_role(admin)로 서버에서만 호출.
  */
 
-/** 공개 콘텐츠 목록(최신순). */
-export async function listPublishedArticles(): Promise<ArticleListItem[]> {
+/** 공개 콘텐츠 목록(최신순). limit 으로 미리보기용 소량 조회 가능. */
+export async function listPublishedArticles(
+  limit = 100,
+): Promise<ArticleListItem[]> {
   const admin = createAdminClient();
-  const { data } = await admin
+  const { data, error } = await admin
     .from("articles")
     .select("id,title,summary,cover_path,tags,status,created_at")
     .eq("status", "published")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(limit);
+
+  if (error) throw new Error(`[content] 목록 조회 실패: ${error.message}`);
 
   return (
     (data ?? []) as Array<

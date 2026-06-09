@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sanitizeSearchTerm } from "@/lib/search";
 import type { AuthContext } from "@/lib/guards/withAuth";
 import type { JobRow, JobType, TagRow } from "@/types/database";
 import type {
@@ -51,7 +52,7 @@ export async function listPublishedJobs(
     query = query.in("id", ids);
   }
   if (filters.q) {
-    const term = `%${filters.q}%`;
+    const term = `%${sanitizeSearchTerm(filters.q)}%`;
     query = query.or(`title.ilike.${term},organization.ilike.${term}`);
   }
   if (filters.jobType) {

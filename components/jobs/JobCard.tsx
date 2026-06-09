@@ -12,7 +12,9 @@ import { BookmarkButton } from "./BookmarkButton";
  * 카드 전체가 상세로의 링크이고, 북마크 버튼만 별도 클릭 영역.
  */
 export function JobCard({ job }: { job: JobListItem }) {
-  const closed = job.status === "closed";
+  const today = new Date().toISOString().slice(0, 10);
+  const closed =
+    job.status === "closed" || (!!job.deadline && job.deadline < today);
   return (
     <Card className="relative p-4 transition-colors hover:bg-accent/40">
       <div className="absolute right-2 top-2">

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Bell, ExternalLink, Shield, User } from "lucide-react";
+import { Bell, ExternalLink, FileText, Images, Shield, User } from "lucide-react";
 
 import { LogoutButton } from "@/components/profile/LogoutButton";
 import { Avatar } from "@/components/profile/Avatar";
@@ -85,6 +85,12 @@ export function AppHeader({
               </MenuLink>
               <MenuLink href={`/alumni/${profileId}`} icon={ExternalLink}>
                 공개 프로필 보기
+              </MenuLink>
+              <MenuLink href="/content" icon={FileText}>
+                콘텐츠
+              </MenuLink>
+              <MenuLink href="/albums" icon={Images}>
+                행사 기록
               </MenuLink>
               {isAdmin ? (
                 <MenuLink href="/admin" icon={Shield}>

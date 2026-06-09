@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import { Ban, Flag, MessageCircle, Send } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,7 @@ import type { PublicProfileDetail } from "@/lib/profile/visibility";
  * 실제 이메일·원문은 응답·UI 어디에도 노출하지 않는다.
  */
 export function ContactActions({ profile }: { profile: PublicProfileDetail }) {
+  const router = useRouter();
   const [proposalOpen, setProposalOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
@@ -130,7 +133,10 @@ export function ContactActions({ profile }: { profile: PublicProfileDetail }) {
         open={blockOpen}
         onOpenChange={setBlockOpen}
         targetId={profile.id}
-        onBlocked={() => setBlocked(true)}
+        onBlocked={() => {
+          setBlocked(true);
+          router.refresh();
+        }}
       />
     </div>
   );
