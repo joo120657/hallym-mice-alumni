@@ -69,6 +69,9 @@ export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const { pathname } = request.nextUrl;
+  if (process.env.LOCAL_PREVIEW === "true") {
+    return response;
+  }
 
   // ① 공개 경로는 Auth 왕복 없이 즉시 통과(세션 리프레시는 보호 경로 진입 시 수행).
   if (isPublicPath(pathname)) {

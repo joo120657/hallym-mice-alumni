@@ -37,7 +37,7 @@ export interface JobEditorInitial {
 }
 
 /**
- * 공고 작성/수정 폼 (§6.4). 생성=POST /api/jobs(→pending), 수정=PATCH /api/jobs/:id.
+ * 공고 작성/수정 폼 (§6.4). 생성=POST /api/jobs(→published), 수정=PATCH /api/jobs/:id.
  * 제출 후 상세로 이동. status/author_id 는 서버가 관리하므로 폼에 없다.
  */
 export function JobEditor({
@@ -253,7 +253,7 @@ export function JobEditor({
       </div>
       {!initial ? (
         <p className="text-center text-xs text-muted-foreground">
-          등록하면 운영진 승인 후 게시돼요.
+          등록하면 바로 기회 페이지에 게시돼요.
         </p>
       ) : null}
     </div>

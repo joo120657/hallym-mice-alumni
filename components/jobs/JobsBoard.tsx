@@ -57,7 +57,7 @@ export function JobsBoard({
   >(initialData ? "ready" : "loading");
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   // initialData 는 기본 필터(EMPTY_FILTERS) 기준이므로 첫 마운트의 fetch 만 건너뛴다.
-  const skipFirstFetch = useRef(Boolean(initialData));
+  const skipFirstFetch = useRef(false);
 
   const hasActiveFilters = applied.type !== "" || applied.tag !== "";
   const hasQuery = applied.q.trim() !== "";
