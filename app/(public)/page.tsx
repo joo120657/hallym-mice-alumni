@@ -17,10 +17,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const revalidate = 60;
 
 async function getCounts() {
-  if (process.env.LOCAL_PREVIEW === "true") {
-    return { alumni: 0, jobs: 0, articles: 0 };
-  }
-
   try {
     const admin = createAdminClient();
     const [a, j, ar] = await Promise.all([

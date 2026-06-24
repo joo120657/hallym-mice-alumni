@@ -42,44 +42,6 @@ export class AuthError extends Error {
   }
 }
 
-function localPreviewAuth(): AuthContext {
-  const now = new Date().toISOString();
-  const profile: ProfileRow = {
-    id: "local-preview-profile",
-    user_id: "local-preview-user",
-    name: "로컬 미리보기",
-    role: "alumni",
-    status: "active",
-    is_verified: true,
-    student_number: null,
-    admission_year: 2020,
-    graduation_year: 2024,
-    department: "MICE",
-    organization: "한림 MICE",
-    employment_status: "employed",
-    position: "Preview User",
-    bio: "Supabase 없이 보는 로컬 미리보기 계정입니다.",
-    career_summary: null,
-    coffeechat_status: "open",
-    open_kakao_url: null,
-    proposal_email_allowed: false,
-    photo_path: null,
-    is_public: true,
-    field_visibility: {},
-    deleted_at: null,
-    anonymized_at: null,
-    created_at: now,
-    updated_at: now,
-  };
-
-  return {
-    userId: "local-preview-user",
-    email: "preview@example.com",
-    profile,
-    isAdmin: true,
-  };
-}
-
 /** 표준 JSON 에러 응답 빌더(Route Handler 용). */
 function jsonError(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
@@ -145,10 +107,6 @@ const loadAuth = cache(async (): Promise<AuthContext | null> => {
  * 데이터 조회는 loadAuth(요청 단위 캐시)가 담당하고 여기선 역할 검사만 한다.
  */
 export async function resolveAuth(role: Role): Promise<AuthContext> {
-  if (process.env.LOCAL_PREVIEW === "true") {
-    return localPreviewAuth();
-  }
-
   const ctx = await loadAuth();
   if (!ctx) {
     throw new AuthError(401, "로그인이 필요합니다.");

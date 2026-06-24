@@ -22,38 +22,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
  */
 export default async function HomePage() {
   const me = await requireMemberPage("/home");
-
-  if (process.env.LOCAL_PREVIEW === "true") {
-    return (
-      <div className="space-y-6 px-5 py-6">
-        <header>
-          <p className="text-sm text-muted-foreground">반가워요,</p>
-          <h1 className="text-2xl font-bold tracking-tight">{me.profile.name} 님</h1>
-        </header>
-
-        <Card className="space-y-3 p-5">
-          <p className="text-sm font-semibold">로컬 미리보기 모드</p>
-          <p className="text-sm text-muted-foreground">
-            Supabase 환경변수 없이 로그인 흐름과 내부 화면 진입만 확인하는 화면입니다.
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            <Stat icon={Eye} label="프로필 조회" value={0} />
-            <Stat icon={Users} label="동문 수" value={0} />
-          </div>
-        </Card>
-
-        <div className="grid gap-2">
-          <Link className="rounded-md border p-4 text-sm font-medium" href="/jobs">
-            기회 페이지로 이동
-          </Link>
-          <Link className="rounded-md border p-4 text-sm font-medium" href="/me">
-            내 정보로 이동
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const admin = createAdminClient();
 
   // 6개 쿼리 전부 독립 → 한 번에 병렬 실행(직렬 폭포 제거: 8왕복 → 1단계).
